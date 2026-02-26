@@ -53,7 +53,24 @@ public class Reservation {
     }
 
     // === 도메인 메서드(나중에 본격 사용) ===
-    public void confirm() { this.status = ReservationStatus.CONFIRMED; }
-    public void cancel()  { this.status = ReservationStatus.CANCELLED; }
-    public void expire()  { this.status = ReservationStatus.EXPIRED; }
+    public void confirm() {
+        if (this.status != ReservationStatus.HOLD) {
+            throw new IllegalStateException("Only HOLD can be confirmed");
+        }
+        this.status = ReservationStatus.CONFIRMED;
+    }
+
+    public void cancel() {
+        if (this.status == ReservationStatus.EXPIRED) {
+            throw new IllegalStateException("Expired reservation cannot be cancelled");
+        }
+        this.status = ReservationStatus.CANCELLED;
+    }
+
+    public void expire() {
+        if (this.status != ReservationStatus.HOLD) {
+            throw new IllegalStateException("Only HOLD can expire");
+        }
+        this.status = ReservationStatus.EXPIRED;
+    }
 }

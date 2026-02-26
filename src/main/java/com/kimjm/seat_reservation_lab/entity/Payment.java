@@ -10,20 +10,13 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "payment",
-        uniqueConstraints = @UniqueConstraint(
-                name = "uk_payment_reservation",
-                columnNames = "reservation_id"
-        )
-)
 public class Payment {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "reservation_id", nullable = false,
-            foreignKey = @ForeignKey(name = "fk_payment_reservation"))
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reservation_id", nullable = false, unique = true)
     private Reservation reservation;
 
     @Enumerated(EnumType.STRING)
@@ -31,17 +24,16 @@ public class Payment {
     private PaymentStatus status;
 
     @Column(nullable = false)
-    private Integer amount;
+    private int amount;
+
+    @Column(nullable = false, length = 50)
+    private String method; // MOCK_CARD 등
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private LocalDateTime paidAt;
 
     @PrePersist
     void onCreate() {
-        if (createdAt == null) createdAt = LocalDateTime.now();
-        if (status == null) status = PaymentStatus.INIT;
+        if (paidAt == null) paidAt = LocalDateTime.now();
     }
-
-    public void success() { this.status = PaymentStatus.SUCCESS; }
-    public void fail()    { this.status = PaymentStatus.FAILED; }
 }

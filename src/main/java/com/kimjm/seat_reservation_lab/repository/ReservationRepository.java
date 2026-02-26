@@ -30,4 +30,15 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
            and r.holdExpiresAt < :now
     """)
     int expireHolds(LocalDateTime now, ReservationStatus holdStatus, ReservationStatus expiredStatus);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("""
+        select r
+        from Reservation r
+        join fetch r.user u
+        join fetch r.slot sl
+        join fetch r.seat st
+        where r.id = :id
+    """)
+    Optional<Reservation> findByIdForUpdate(Long id);
 }
