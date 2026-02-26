@@ -9,12 +9,13 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    private final String secret = "very-secret-key-very-secret-key";
+    private final String secret = "very-secret-key-very-secret-key-1234";
     private final long expiration = 1000 * 60 * 60;
 
-    public String generateToken(Long userId) {
+    public String generateToken(Long userId, String role) {
         return Jwts.builder()
                 .setSubject(String.valueOf(userId))
+                .claim("role", role)
                 .setExpiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
                 .compact();
@@ -29,5 +30,14 @@ public class JwtProvider {
                         .getBody()
                         .getSubject()
         );
+    }
+
+    public String getRole(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(secret.getBytes())
+                .build()
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role", String.class);
     }
 }

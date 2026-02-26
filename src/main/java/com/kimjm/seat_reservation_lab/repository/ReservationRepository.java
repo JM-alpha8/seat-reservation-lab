@@ -3,9 +3,14 @@ package com.kimjm.seat_reservation_lab.repository;
 import com.kimjm.seat_reservation_lab.entity.Reservation;
 import com.kimjm.seat_reservation_lab.entity.ReservationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import jakarta.persistence.LockModeType;
+import org.springframework.data.jpa.repository.Lock;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+
 
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
@@ -16,4 +21,13 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
 
     // 만료된 HOLD 찾기(나중에 스케줄러에서 사용)
     long countByStatusAndHoldExpiresAtBefore(ReservationStatus status, LocalDateTime time);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("""
+        update Reservation r
+           set r.status = :expiredStatus
+         where r.status = :holdStatus
+           and r.holdExpiresAt < :now
+    """)
+    int expireHolds(LocalDateTime now, ReservationStatus holdStatus, ReservationStatus expiredStatus);
 }

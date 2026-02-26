@@ -3,6 +3,7 @@ package com.kimjm.seat_reservation_lab.service;
 import com.kimjm.seat_reservation_lab.dto.LoginRequest;
 import com.kimjm.seat_reservation_lab.dto.LoginResponse;
 import com.kimjm.seat_reservation_lab.dto.SignupRequest;
+import com.kimjm.seat_reservation_lab.entity.Role;
 import com.kimjm.seat_reservation_lab.entity.User;
 import com.kimjm.seat_reservation_lab.repository.UserRepository;
 import com.kimjm.seat_reservation_lab.security.JwtProvider;
@@ -22,6 +23,7 @@ public class AuthService {
         User user = User.builder()
                 .email(req.email())
                 .passwordHash(passwordEncoder.encode(req.password()))
+                .role(Role.USER)
                 .build();
 
         userRepository.save(user);
@@ -35,7 +37,7 @@ public class AuthService {
             throw new RuntimeException("Invalid password");
         }
 
-        String token = jwtProvider.generateToken(user.getId());
+        String token = jwtProvider.generateToken(user.getId(), user.getRole().name());
         return new LoginResponse(token);
     }
 
